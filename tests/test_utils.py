@@ -248,10 +248,7 @@ def test_padded_convolve(kernel_size, pad_mode, list_input, data_fixture):
     # make a simple uniform window kernel
     kernel = np.ones(kernel_size) / kernel_size
     _, data = data_fixture
-    if list_input:
-        input_data = data.tolist()
-    else:
-        input_data = data
+    input_data = data.tolist() if list_input else data
     conv_output = utils.padded_convolve(input_data, kernel, pad_mode)
 
     assert isinstance(conv_output, np.ndarray)
@@ -275,10 +272,7 @@ def test_pad_edges(pad_mode, pad_length, list_input, data_fixture):
     if list_input:
         data = data.tolist()
 
-    if not callable(pad_mode):
-        np_pad_mode = pad_mode.lower()
-    else:
-        np_pad_mode = pad_mode
+    np_pad_mode = pad_mode if callable(pad_mode) else pad_mode.lower()
     if np_pad_mode != 'extrapolate':
         expected_output = np.pad(data, pad_length, np_pad_mode)
     else:
@@ -378,11 +372,7 @@ def test_get_edges(pad_mode, pad_length, list_input, data_fixture):
     if list_input:
         data = data.tolist()
 
-    if not callable(pad_mode):
-        np_pad_mode = pad_mode.lower()
-    else:
-        np_pad_mode = pad_mode
-
+    np_pad_mode = pad_mode if callable(pad_mode) else pad_mode.lower()
     if pad_length == 0:
         check_output = True
         expected_left = np.array([])

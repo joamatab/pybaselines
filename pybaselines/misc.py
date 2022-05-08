@@ -155,10 +155,7 @@ def _banded_dot_vector(ab, x, ab_lu, a_full_shape):
     vector = np.asarray(x)
 
     gbmv = get_blas_funcs(['gbmv'], (matrix, vector))[0]
-    # gbmv computes y = alpha * a * x + beta * y where a is the banded matrix
-    # (in compressed form), x is the input vector, y is the output vector, and alpha
-    # and beta are scalar multipliers
-    output = gbmv(
+    return gbmv(
         m=a_full_shape[0],  # number of rows of `a` matrix in full form
         n=a_full_shape[1],  # number of columns of `a` matrix in full form
         kl=ab_lu[0],  # sub-diagonals
@@ -168,8 +165,6 @@ def _banded_dot_vector(ab, x, ab_lu, a_full_shape):
         x=vector,  # `x` vector
         # trans=False,  # tranpose a, optional; may allow later
     )
-
-    return output
 
 
 # adapted from bandmat (bandmat/tensor.pyx/dot_mm_plus_equals and dot_mm); see license above
@@ -313,10 +308,7 @@ def _banded_dot_banded(a, b, a_lu, b_lu, a_full_shape, b_full_shape, symmetric_o
     b_lower, b_upper = b_lu
     c_upper = min(a_upper + b_upper, b_full_shape[1] - 1)
     c_lower = min(a_lower + b_lower, a_full_shape[0] - 1)
-    if symmetric_output:
-        lower_bound = 0  # only fills upper bands
-    else:
-        lower_bound = a_lower + b_lower
+    lower_bound = 0 if symmetric_output else a_lower + b_lower
     # create output matrix outside of this function since numba's implementation
     # of np.zeros is much slower than numpy's (https://github.com/numba/numba/issues/7259)
     output = np.zeros((c_lower + c_upper + 1, diag_length))
@@ -545,12 +537,7 @@ def _beads_loss(x, use_v2=True, eps_1=1e-6):
 
 
     """
-    if use_v2:
-        loss = x - eps_1 * np.log(x + eps_1)
-    else:
-        loss = np.sqrt(x**2 + eps_1)
-
-    return loss
+    return x - eps_1 * np.log(x + eps_1) if use_v2 else np.sqrt(x**2 + eps_1)
 
 
 # adapted from MATLAB beads version; see license above
@@ -587,12 +574,7 @@ def _beads_weighting(x, use_v2=True, eps_1=1e-6):
     (BEADS). Chemometrics and Intelligent Laboratory Systems, 2014, 139, 156–167.
 
     """
-    if use_v2:
-        weight = 1 / (x + eps_1)
-    else:
-        weight = 1 / np.sqrt(x**2 + eps_1)
-
-    return weight
+    return 1 / (x + eps_1) if use_v2 else 1 / np.sqrt(x**2 + eps_1)
 
 
 def _abs_diff(x, smooth_half_window=0):

@@ -54,10 +54,7 @@ def _yx_arrays(data, x_data=None, x_min=-1., x_max=1., check_finite=False):
     converts it to an array.
 
     """
-    if check_finite:
-        y = np.asarray_chkfinite(data)
-    else:
-        y = np.asarray(data)
+    y = np.asarray_chkfinite(data) if check_finite else np.asarray(data)
     if x_data is None:
         x = np.linspace(x_min, x_max, y.shape[0])
     else:

@@ -54,11 +54,7 @@ def test_safe_std_allow_nan(run_enum):
     in the array and nan propogation would not want to be stopped in those cases.
 
     """
-    if run_enum:
-        array = np.array((1, 2, np.nan))
-    else:
-        array = np.array((1, 2, np.inf))
-
+    array = np.array((1, 2, np.nan)) if run_enum else np.array((1, 2, np.inf))
     assert np.isnan(_weighting._safe_std(array))
 
 

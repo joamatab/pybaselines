@@ -102,9 +102,7 @@ def make_data(num_x):
     )
     baseline = 5 + 15 * np.exp(-x / 200)
     noise = np.random.default_rng(0).normal(0, 0.1, num_x)
-    y = signal + baseline + noise
-
-    return y
+    return signal + baseline + noise
 
 
 if __name__ == '__main__':
@@ -123,7 +121,7 @@ if __name__ == '__main__':
         (sparse_asls, 'scipy-sparse'),
     )
 
-    for i, (func, func_name) in enumerate(functions):
+    for func, func_name in functions:
         timings = []
         for num_x in np.logspace(np.log10(500), np.log10(40000), 8, dtype=int):
             y = make_data(num_x)

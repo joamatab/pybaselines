@@ -647,10 +647,7 @@ def test_get_function_fails_no_module():
 @pytest.mark.parametrize('method_kwargs', (None, {'a': 2}))
 def test_setup_optimizer(small_data, list_input, method_kwargs):
     """Ensures output of _setup_optimizer is correct."""
-    if list_input:
-        data = small_data.tolist()
-    else:
-        data = small_data
+    data = small_data.tolist() if list_input else small_data
     y, fit_func, func_module, output_kwargs = _algorithm_setup._setup_optimizer(
         data, 'asls', [whittaker], method_kwargs
     )

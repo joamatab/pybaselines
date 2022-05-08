@@ -893,7 +893,7 @@ class TestGoldindec(AlgorithmTester):
             expected_shape_0 = max_iter_2 + 2
             expected_shape_1 = max_iter
 
-        if exit_enum == 1:
+        elif exit_enum == 1:
             # outer fitting does more iterations
             max_iter = 15
             tol = 1e6
@@ -904,7 +904,7 @@ class TestGoldindec(AlgorithmTester):
             expected_shape_0 = max_iter_2 + 2
             expected_shape_1 = max_iter_2
 
-        if exit_enum == 2:
+        elif exit_enum == 2:
             # only one iteration completed; exits due to tol_2
             max_iter = 15
             tol = 1e6
@@ -915,7 +915,7 @@ class TestGoldindec(AlgorithmTester):
             expected_shape_0 = 3
             expected_shape_1 = 1
 
-        if exit_enum == 3:
+        elif exit_enum == 3:
             # only one iteration completed; exits due to tol_3
             max_iter = 15
             tol = 1e6

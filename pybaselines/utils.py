@@ -299,13 +299,11 @@ def pad_edges(data, pad_length, mode='extrapolate',
 
     if isinstance(mode, str):
         mode = mode.lower()
-    if mode == 'extrapolate':
-        left_edge, right_edge = _get_edges(y, pad_length, mode, extrapolate_window)
-        padded_data = np.concatenate((left_edge, y, right_edge))
-    else:
-        padded_data = np.pad(y, pad_length, mode, **pad_kwargs)
+    if mode != 'extrapolate':
+        return np.pad(y, pad_length, mode, **pad_kwargs)
 
-    return padded_data
+    left_edge, right_edge = _get_edges(y, pad_length, mode, extrapolate_window)
+    return np.concatenate((left_edge, y, right_edge))
 
 
 def padded_convolve(data, kernel, mode='reflect', **pad_kwargs):
@@ -453,19 +451,18 @@ def difference_matrix(data_size, diff_order=2, diff_format=None):
 
     if diff_order == 0:
         # faster to directly create identity matrix
-        diff_matrix = identity(data_size, format=diff_format)
-    else:
-        diagonals = np.zeros(2 * diff_order + 1)
-        diagonals[diff_order] = 1
-        for _ in range(diff_order):
-            diagonals = diagonals[:-1] - diagonals[1:]
+        return identity(data_size, format=diff_format)
+    diagonals = np.zeros(2 * diff_order + 1)
+    diagonals[diff_order] = 1
+    for _ in range(diff_order):
+        diagonals = diagonals[:-1] - diagonals[1:]
 
-        diff_matrix = diags(
-            diagonals, np.arange(diff_order + 1),
-            shape=(data_size - diff_order, data_size), format=diff_format
-        )
-
-    return diff_matrix
+    return diags(
+        diagonals,
+        np.arange(diff_order + 1),
+        shape=(data_size - diff_order, data_size),
+        format=diff_format,
+    )
 
 
 def optimize_window(data, increment=1, max_hits=3, window_tol=1e-6,
@@ -517,7 +514,7 @@ def optimize_window(data, increment=1, max_hits=3, window_tol=1e-6,
     opening = grey_opening(y, [2 * min_half_window + 1])
     hits = 0
     best_half_window = min_half_window
-    for half_window in range(min_half_window + increment, max_half_window, increment):
+    for half_window in range(best_half_window + increment, max_half_window, increment):
         new_opening = grey_opening(y, [half_window * 2 + 1])
         if relative_difference(opening, new_opening) < window_tol:
             if hits == 0:
@@ -568,10 +565,7 @@ def _check_scalar(data, desired_length, fill_scalar=False, **asarray_kwargs):
 
     """
     output = np.asarray(data, **asarray_kwargs)
-    ndim = output.ndim
-    if not ndim:
-        is_scalar = True
-    else:
+    if ndim := output.ndim:
         if ndim > 1:  # coerce to 1d shape
             output = output.reshape(-1)
         len_output = len(output)
@@ -581,6 +575,8 @@ def _check_scalar(data, desired_length, fill_scalar=False, **asarray_kwargs):
         else:
             is_scalar = False
 
+    else:
+        is_scalar = True
     if is_scalar and fill_scalar:
         output = np.full(desired_length, output)
     elif not is_scalar and len_output != desired_length:

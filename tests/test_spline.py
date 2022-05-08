@@ -141,10 +141,7 @@ class TestMixtureModel(AlgorithmTester):
     def test_unchanged_data(self, data_fixture, weight_bool):
         """Ensures that input data is unchanged by the function."""
         x, y = get_data()
-        if weight_bool:
-            weights = np.ones_like(y)
-        else:
-            weights = None
+        weights = np.ones_like(y) if weight_bool else None
         self._test_unchanged_data(data_fixture, y, None, y, weights=weights)
 
     @pytest.mark.parametrize('symmetric', (False, True))

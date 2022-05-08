@@ -392,17 +392,15 @@ def _huber_loss(residual, threshold=1.0, alpha_factor=0.99, symmetric=True):
     alpha = alpha_factor * 0.5  # alpha_max for huber is 0.5
     if symmetric:
         mask = (np.abs(residual) < threshold)
-        weights = (
-            mask * residual * (2 * alpha - 1)
-            + (~mask) * 2 * alpha * threshold * np.sign(residual)
-        )
+        return mask * residual * (2 * alpha - 1) + (
+            ~mask
+        ) * 2 * alpha * threshold * np.sign(residual)
+
     else:
         mask = (residual < threshold)
-        weights = (
-            mask * residual * (2 * alpha - 1)
-            + (~mask) * (2 * alpha * threshold - residual)
+        return mask * residual * (2 * alpha - 1) + (~mask) * (
+            2 * alpha * threshold - residual
         )
-    return weights
 
 
 # adapted from (https://www.mathworks.com/matlabcentral/fileexchange/27429-background-correction);
@@ -448,10 +446,7 @@ def _truncated_quadratic_loss(residual, threshold=1.0, alpha_factor=0.99, symmet
 
     """
     alpha = alpha_factor * 0.5  # alpha_max for truncated quadratic is 0.5
-    if symmetric:
-        mask = (np.abs(residual) < threshold)
-    else:
-        mask = (residual < threshold)
+    mask = (np.abs(residual) < threshold) if symmetric else (residual < threshold)
     return mask * residual * (2 * alpha - 1) - (~mask) * residual
 
 
@@ -507,13 +502,13 @@ def _indec_loss(residual, threshold=1.0, alpha_factor=0.99, symmetric=True):
         # multiple=1 is same as sign(residual) since residual is always > 0
         # for asymmetric case, but this allows not doing the sign calculation
         multiple = 1
-    weights = (
-        mask * residual * (2 * alpha - 1)
-        - (~mask) * (
-            residual + alpha * multiple * threshold**3 / np.maximum(2 * residual**2, _MIN_FLOAT)
-        )
+    return mask * residual * (2 * alpha - 1) - (~mask) * (
+        residual
+        + alpha
+        * multiple
+        * threshold**3
+        / np.maximum(2 * residual**2, _MIN_FLOAT)
     )
-    return weights
 
 
 def _identify_loss_method(loss_method):
@@ -543,10 +538,7 @@ def _identify_loss_method(loss_method):
     prefix, *split_method = loss_method.lower().split('_')
     if prefix not in ('a', 's', 'asymmetric', 'symmetric') or not split_method:
         raise ValueError('must specify loss function symmetry by appending "a_" or "s_"')
-    if prefix in ('a', 'asymmetric'):
-        symmetric = False
-    else:
-        symmetric = True
+    symmetric = prefix not in ('a', 'asymmetric')
     return symmetric, '_'.join(split_method)
 
 
@@ -1560,7 +1552,7 @@ def goldindec(data, x_data=None, poly_order=2, tol=1e-3, max_iter=250, weights=N
     try:
         symmetric_loss, method = _identify_loss_method(cost_function)
     except ValueError:  # do not require a prefix since cost must be asymmetric
-        symmetric_loss, method = _identify_loss_method('a_' + cost_function)
+        symmetric_loss, method = _identify_loss_method(f'a_{cost_function}')
     if symmetric_loss:
         # symmetric cost functions don't work due to how the up-down ratio vs
         # peak_ratio function was created in the reference; in theory, could simulate
