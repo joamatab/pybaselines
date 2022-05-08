@@ -39,10 +39,7 @@ def optimize_lam(data, known_baseline, func, previous_min=None, **kwargs):
     particular example.
 
     """
-    if previous_min is None:
-        min_lam = 0
-    else:
-        min_lam = previous_min - 0.5
+    min_lam = 0 if previous_min is None else previous_min - 0.5
     # coarse optimization
     lams = np.arange(min_lam, 13.5, 0.5)
     best_lam = _minimize(data, known_baseline, func, lams, **kwargs)

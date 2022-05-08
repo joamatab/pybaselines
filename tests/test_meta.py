@@ -27,10 +27,7 @@ def _change_x(data, x_data):
 
 def _different_output(data):
     """Has different behavior based on the input data type, which is unwanted."""
-    if isinstance(data, np.ndarray):
-        return data
-    else:
-        return np.asarray(data) * 20
+    return data if isinstance(data, np.ndarray) else np.asarray(data) * 20
 
 
 def _single_output(data):

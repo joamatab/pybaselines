@@ -495,13 +495,7 @@ def ipsa(data, half_window=None, max_iter=500, tol=None, roi=None,
             roi = np.asarray(roi)
 
     if tol is None:
-        if original_criteria:
-            # guess what the desired height should be; not a great guess, but it's
-            # something
-            tol = 1 / np.ptp(y[data_slice][roi])
-        else:
-            tol = 1e-3
-
+        tol = 1 / np.ptp(y[data_slice][roi]) if original_criteria else 1e-3
     savgol_coef = savgol_coeffs(window_size, 2)
     tol_history = np.empty(max_iter + 1)
     old_baseline = y[data_slice]

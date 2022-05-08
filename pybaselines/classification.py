@@ -524,8 +524,7 @@ def _padded_rolling_std(data, half_window, ddof=0):
 
     """
     padded_data = np.pad(data, half_window, 'reflect')
-    rolling_std = _rolling_std(padded_data, half_window, ddof)[half_window:-half_window]
-    return rolling_std
+    return _rolling_std(padded_data, half_window, ddof)[half_window:-half_window]
 
 
 def std_distribution(data, x_data=None, half_window=None, interp_half_window=5,

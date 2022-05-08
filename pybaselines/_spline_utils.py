@@ -329,20 +329,28 @@ def _spline_knots(x, num_knots=10, spline_degree=3, penalized=False):
         # calculate inner knots separately to ensure x_min and x_max are correct;
         # otherwise, they can be slighly off due to floating point errors
         inner_knots = np.linspace(x_min, x_max, num_knots)
-        knots = np.concatenate((
-            np.linspace(x_min - spline_degree * dx, x_min - dx, spline_degree),
-            inner_knots,
-            np.linspace(x_max + dx, x_max + spline_degree * dx, spline_degree),
-        ))
+        return np.concatenate(
+            (
+                np.linspace(
+                    x_min - spline_degree * dx, x_min - dx, spline_degree
+                ),
+                inner_knots,
+                np.linspace(
+                    x_max + dx, x_max + spline_degree * dx, spline_degree
+                ),
+            )
+        )
+
     else:
         # TODO maybe provide a better way to select knot positions for regular B-splines
         inner_knots = np.percentile(x, np.linspace(0, 100, num_knots))
-        knots = np.concatenate((
-            np.repeat(inner_knots[0], spline_degree), inner_knots,
-            np.repeat(inner_knots[-1], spline_degree)
-        ))
-
-    return knots
+        return np.concatenate(
+            (
+                np.repeat(inner_knots[0], spline_degree),
+                inner_knots,
+                np.repeat(inner_knots[-1], spline_degree),
+            )
+        )
 
 
 def _spline_basis(x, knots, spline_degree=3):
@@ -649,18 +657,24 @@ def _solve_pspline(x, y, weights, basis, penalty, knots, spline_degree, rhs_extr
         rhs = rhs + rhs_extra
 
     if lower_only:
-        coeffs = solveh_banded(
-            lhs, rhs, overwrite_ab=True, overwrite_b=True, lower=True,
-            check_finite=False
-        )
-    else:
-        bands = len(lhs) // 2
-        coeffs = solve_banded(
-            (bands, bands), lhs, rhs, overwrite_ab=True, overwrite_b=True,
-            check_finite=False
+        return solveh_banded(
+            lhs,
+            rhs,
+            overwrite_ab=True,
+            overwrite_b=True,
+            lower=True,
+            check_finite=False,
         )
 
-    return coeffs
+    bands = len(lhs) // 2
+    return solve_banded(
+        (bands, bands),
+        lhs,
+        rhs,
+        overwrite_ab=True,
+        overwrite_b=True,
+        check_finite=False,
+    )
 
 
 def _lower_to_full(ab):

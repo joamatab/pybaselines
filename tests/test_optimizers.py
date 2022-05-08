@@ -111,10 +111,8 @@ class TestOptimizeExtendedRange(AlgorithmTester):
         assert_allclose(regular_inputs_result, reverse_inputs_result[::-1], 1e-10)
         # also ensure the input weights are unchanged when sorting
         assert_array_equal(original_weights, input_weights)
-        # ensure method_kwargs dict was unchanged
-        total_dict = input_kwargs.copy()
-        total_dict.update(method_kwargs)
-        for key in total_dict.keys():
+        total_dict = input_kwargs | method_kwargs
+        for key in total_dict:
             if key not in input_kwargs or key not in method_kwargs:
                 raise AssertionError('keys in method_kwargs were alterred')
             else:
@@ -145,11 +143,7 @@ class TestOptimizeExtendedRange(AlgorithmTester):
     )
     def test_all_methods(self, method):
         """Tests all methods that should work with optimize_extended_range."""
-        if method == 'loess':
-            # reduce number of calculations for loess since it is much slower
-            kwargs = {'min_value': 1, 'max_value': 2}
-        else:
-            kwargs = {}
+        kwargs = {'min_value': 1, 'max_value': 2} if method == 'loess' else {}
         # use height_scale=0.1 to avoid exponential overflow warning for arpls and aspls
         output = self._call_func(
             self.y, self.x, method=method, height_scale=0.1,

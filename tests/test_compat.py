@@ -47,8 +47,7 @@ def _add(a, b):
     Will be decorated for testing.
 
     """
-    output = a + b
-    return output
+    return a + b
 
 
 def test_jit():
@@ -82,8 +81,7 @@ def test_jit_no_parentheses():
         For testing whether the jit decorator works without parentheses.
 
         """
-        output = a + b
-        return output
+        return a + b
 
     input_1 = 5
     input_2 = 6
@@ -104,8 +102,7 @@ def test_jit_no_inputs():
         For testing whether the jit decorator works without any arguments.
 
         """
-        output = a + b
-        return output
+        return a + b
 
     input_1 = 5
     input_2 = 6
@@ -126,8 +123,7 @@ def test_jit_signature():
         For testing whether the jit decorator works with a function signature.
 
         """
-        output = a + b
-        return output
+        return a + b
 
     input_1 = 5
     input_2 = 6

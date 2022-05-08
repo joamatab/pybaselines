@@ -157,20 +157,18 @@ def _mixture_pdf(x, n, sigma, n_2=0, pos_uniform=None, neg_uniform=None):
     Intelligent Laboratory Systems, 2012, 117, 56-60.
 
     """
+    n1 = n
     # no error handling for if both pos_uniform and neg_uniform are None since this
     # is an internal function
     if neg_uniform is None:
-        n1 = n
         n2 = 1 - n
         n3 = 0
         neg_uniform = 0
     elif pos_uniform is None:  # never actually used, but nice to have for the future
-        n1 = n
         n2 = 0
         n3 = 1 - n
         pos_uniform = 0
     else:
-        n1 = n
         n2 = n_2
         n3 = 1 - n - n_2
 
@@ -478,10 +476,11 @@ def _quadratic_bezier(y_points, t):
 
     """
     one_minus_t = 1 - t
-    output = (
-        y_points[0] * one_minus_t**2 + y_points[1] * 2 * one_minus_t * t + y_points[2] * t**2
+    return (
+        y_points[0] * one_minus_t**2
+        + y_points[1] * 2 * one_minus_t * t
+        + y_points[2] * t**2
     )
-    return output
 
 
 @jit(nopython=True, cache=True)
@@ -539,15 +538,12 @@ def _quadratic_bezier_spline(x, y, indices):
         right_x = x[right_idx]
         left_y = y[left_idx]
         right_y = y[right_idx]
-        if num_indices == 2:  # perform linear interpolation
-            output = left_y + (x - left_x) * (right_y - left_y) / (right_x - left_x)
-        else:  # create a single Bezier curve from the three points
-            center_y = y[indices[1]]
-            y_points = [left_y, center_y, right_y]
-            t = (x - left_x) / (right_x - left_x)
-            output = _quadratic_bezier(y_points, t)
-
-        return output
+        if num_indices == 2:
+            return left_y + (x - left_x) * (right_y - left_y) / (right_x - left_x)
+        center_y = y[indices[1]]
+        y_points = [left_y, center_y, right_y]
+        t = (x - left_x) / (right_x - left_x)
+        return _quadratic_bezier(y_points, t)
 
     output = np.empty(num_x)
 

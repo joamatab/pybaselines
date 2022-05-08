@@ -39,8 +39,7 @@ def _asls(y, baseline, p):
 
     """
     mask = y > baseline
-    weights = p * mask + (1 - p) * (~mask)
-    return weights
+    return p * mask + (1 - p) * (~mask)
 
 
 def _safe_std(array, **kwargs):
@@ -106,9 +105,7 @@ def _arpls(y, baseline):
     residual = y - baseline
     neg_residual = residual[residual < 0]
     std = _safe_std(neg_residual, ddof=1)  # use dof=1 since sampling subset
-    # add a negative sign since expit performs 1/(1+exp(-input))
-    weights = expit(-(2 / std) * (residual - (2 * std - np.mean(neg_residual))))
-    return weights
+    return expit(-(2 / std) * (residual - (2 * std - np.mean(neg_residual))))
 
 
 def _drpls(y, baseline, iteration):
@@ -140,8 +137,7 @@ def _drpls(y, baseline, iteration):
     neg_residual = residual[residual < 0]
     std = _safe_std(neg_residual, ddof=1)  # use dof=1 since only sampling a subset
     inner = (np.exp(iteration) / std) * (residual - (2 * std - np.mean(neg_residual)))
-    weights = 0.5 * (1 - (inner / (1 + np.abs(inner))))
-    return weights
+    return 0.5 * (1 - (inner / (1 + np.abs(inner))))
 
 
 def _iarpls(y, baseline, iteration):
@@ -173,8 +169,7 @@ def _iarpls(y, baseline, iteration):
     residual = y - baseline
     std = _safe_std(residual[residual < 0], ddof=1)  # dof=1 since sampling a subset
     inner = (np.exp(iteration) / std) * (residual - 2 * std)
-    weights = 0.5 * (1 - (inner / np.sqrt(1 + inner**2)))
-    return weights
+    return 0.5 * (1 - (inner / np.sqrt(1 + inner**2)))
 
 
 def _aspls(y, baseline):

@@ -227,13 +227,13 @@ def optimize_extended_range(data, x_data=None, method='asls', side='both', width
                 ' using a polynomial method'
             ))
         param_name = 'poly_order'
+    elif any(val > 100 for val in (min_value, max_value, step)):
+        raise ValueError((
+            'min_value, max_value, and step should be the power of 10 to use '
+            '(eg. min_value=2 denotes 10**2), not the actual "lam" value, and '
+            'thus should not be greater than 100'
+        ))
     else:
-        if any(val > 100 for val in (min_value, max_value, step)):
-            raise ValueError((
-                'min_value, max_value, and step should be the power of 10 to use '
-                '(eg. min_value=2 denotes 10**2), not the actual "lam" value, and '
-                'thus should not be greater than 100'
-            ))
         param_name = 'lam'
 
     _, x = _yx_arrays(y, x_data)
@@ -292,10 +292,7 @@ def optimize_extended_range(data, x_data=None, method='asls', side='both', width
     best_val = None
     # TODO maybe switch to linspace since arange is inconsistent when using floats
     for var in np.arange(min_value, max_value + step, step):
-        if param_name == 'lam':
-            method_kws[param_name] = 10**var
-        else:
-            method_kws[param_name] = var
+        method_kws[param_name] = 10**var if param_name == 'lam' else var
         fit_baseline, fit_params = fit_func(fit_data, **method_kws)
         # TODO change the known baseline so that np.roll does not have to be
         # calculated each time, since it requires additional time
@@ -363,21 +360,19 @@ def _determine_polyorders(y, x, poly_order, weights, fit_function, **fit_kwargs)
     baseline_to_signal = (baseline.max() - baseline.min()) / (signal.max() - signal.min())
     # Table 2 in reference
     if baseline_to_signal < 0.2:
-        orders = (1, 2)
+        return 1, 2
     elif baseline_to_signal < 0.75:
-        orders = (2, 3)
+        return 2, 3
     elif baseline_to_signal < 8.5:
-        orders = (3, 4)
+        return 3, 4
     elif baseline_to_signal < 55:
-        orders = (4, 5)
+        return 4, 5
     elif baseline_to_signal < 240:
-        orders = (5, 6)
+        return 5, 6
     elif baseline_to_signal < 517:
-        orders = (6, 7)
+        return 6, 7
     else:
-        orders = (6, 8)  # not a typo, use 6 and 8 rather than 7 and 8
-
-    return orders
+        return 6, 8
 
 
 def adaptive_minmax(data, x_data=None, poly_order=None, method='modpoly',

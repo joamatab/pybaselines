@@ -43,12 +43,17 @@ def _nieve_rolling_std(data, half_window, ddof=0):
 
     """
     num_y = data.shape[0]
-    rolling_std = np.array([
-        np.std(data[max(0, i - half_window):min(i + half_window + 1, num_y)], ddof=ddof)
-        for i in range(num_y)
-    ])
-
-    return rolling_std
+    return np.array(
+        [
+            np.std(
+                data[
+                    max(0, i - half_window) : min(i + half_window + 1, num_y)
+                ],
+                ddof=ddof,
+            )
+            for i in range(num_y)
+        ]
+    )
 
 
 @pytest.mark.parametrize('y_scale', (1, 1e-9, 1e9))
@@ -269,10 +274,7 @@ def test_haar_cwt_comparison_to_pywavelets(scale):
         scipy_version = scipy.__version__.split('.')[:2]
         major = int(scipy_version[0])
         minor = int(scipy_version[1])
-        if major > 1 or (major == 1 and minor >= 4):
-            test_values = True
-        else:
-            test_values = False
+        test_values = major > 1 or (major == 1 and minor >= 4)
     except Exception:  # in case the version checking is wrong, then just ignore
         test_values = False
 
